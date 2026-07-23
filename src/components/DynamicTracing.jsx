@@ -392,11 +392,16 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
       }
       
       setCoverage(Math.min(pct, 100));
+    }
+  };
 
-      // 설정된 민감도(난이도) threshold에 따라 성공 처리!
-      if (pct >= threshold && !completed) {
-        triggerSuccess();
-      }
+  // 아이가 손을 떼고 다 썼어요 버튼을 누르면 성공 체크 진행!
+  const checkWriting = () => {
+    playBubble();
+    if (coverage >= threshold) {
+      triggerSuccess();
+    } else {
+      speakWord("글자가 조금 덜 써졌어요! 연한 분홍색 글자를 요술봉으로 더 꼼꼼히 채워볼까요?");
     }
   };
 
@@ -641,25 +646,38 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
 
         {/* 액션 버튼 */}
         <div style={{ display: 'flex', gap: '16px' }}>
-          <button className="kids-btn kids-btn-lavender" onClick={clearCanvas}>
-            <Trash2 size={20} /> 지우고 다시 쓰기
-          </button>
-          
-          {completed && (
+          {!completed ? (
+            <>
+              <button className="kids-btn kids-btn-lavender" onClick={clearCanvas} style={{ fontSize: '1.2rem', padding: '12px 24px' }}>
+                <Trash2 size={20} /> 지우기 🧼
+              </button>
+              <button
+                className="kids-btn kids-btn-pink"
+                style={{
+                  fontSize: '1.3rem',
+                  padding: '12px 28px',
+                  boxShadow: '0 6px 0 var(--pink-dark)'
+                }}
+                onClick={checkWriting}
+              >
+                다 썼어요! 🪄
+              </button>
+            </>
+          ) : (
             <button
-              className="kids-btn kids-btn-pink"
+              className="kids-btn kids-btn-mint"
               style={{
                 fontSize: '1.4rem',
-                padding: '12px 32px',
+                padding: '12px 36px',
                 animation: 'magicPulse 1.5s infinite',
-                boxShadow: '0 8px 0 var(--pink-dark)'
+                boxShadow: '0 8px 0 #3ebfa9'
               }}
               onClick={handleProceed}
             >
               {currentIdx < syllables.length - 1 
                 ? '다음 글자 쓰러 가기! ✍️' 
                 : '칭찬 스티커 붙이기! 👑'}
-              <ArrowRight size={20} />
+              <ArrowRight size={20} style={{ marginLeft: '6px' }} />
             </button>
           )}
         </div>
