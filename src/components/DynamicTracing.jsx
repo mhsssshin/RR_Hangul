@@ -3,7 +3,7 @@ import { Sparkles, Trash2, ArrowRight, Check } from 'lucide-react';
 import { playBubble, playSuccess, speakWord } from '../utils/audio';
 import confetti from 'canvas-confetti';
 
-export default function DynamicTracing({ word, onNext, onBack }) {
+export default function DynamicTracing({ word, threshold = 75, onNext, onBack }) {
   // 단어를 글자(음절) 단위로 쪼개기. 예: '사과' -> ['사', '과']
   const syllables = Array.from(word.text);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -277,7 +277,7 @@ export default function DynamicTracing({ word, onNext, onBack }) {
 
     // 유저의 캔버스 궤적을 100x100 오프스크린 캔버스로 스케일 다운해서 그리기
     dCtx.strokeStyle = 'white';
-    dCtx.lineWidth = 8; // 비례적으로 굵기 조절 (350px 캔버스의 26px는 100px 캔버스에서 약 8px)
+    dCtx.lineWidth = 11; // 미세한 어긋남을 허용하기 위해 판정 브러쉬 두께를 상향 (기존 8)
     dCtx.lineCap = 'round';
     dCtx.lineJoin = 'round';
 
@@ -316,8 +316,8 @@ export default function DynamicTracing({ word, onNext, onBack }) {
       const pct = Math.floor((hitPixels / targetPixels) * 100);
       setCoverage(Math.min(pct, 100));
 
-      // 90% 이상 채우면 성공으로 처리!
-      if (pct >= 90 && !completed) {
+      // 설정된 민감도(난이도) threshold에 따라 성공 처리!
+      if (pct >= threshold && !completed) {
         triggerSuccess();
       }
     }
@@ -518,10 +518,11 @@ export default function DynamicTracing({ word, onNext, onBack }) {
             fontSize: '1.2rem',
             fontWeight: 'bold',
             color: completed ? 'var(--mint)' : 'var(--pink-primary)',
-            width: '45px',
-            textAlign: 'right'
+            width: '100px',
+            textAlign: 'right',
+            whiteSpace: 'nowrap'
           }}>
-            {coverage}%
+            {coverage}% / {threshold}%
           </span>
         </div>
 

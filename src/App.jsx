@@ -13,6 +13,7 @@ export default function App() {
   const [basket, setBasket] = useState([]); // 학습 바구니 단어들
   const [currentIdx, setCurrentIdx] = useState(0); // 현재 학습 중인 단어의 인덱스
   const [showAllClearModal, setShowAllClearModal] = useState(false);
+  const [threshold, setThreshold] = useState(75); // 쓰기 민감도 난이도 (55: 쉬움, 75: 보통, 90: 꼼꼼히)
 
   const activeWord = basket[currentIdx];
 
@@ -117,6 +118,56 @@ export default function App() {
         )}
 
         <div className="header-buttons">
+          {/* 난이도 설정 */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            background: 'white',
+            padding: '4px 12px',
+            borderRadius: '16px',
+            border: '2px solid rgba(255, 117, 151, 0.15)',
+            boxShadow: 'var(--shadow-sm)'
+          }}>
+            <span style={{ fontSize: '0.9rem', color: '#634fa6', fontFamily: 'var(--font-kids)' }}>난이도:</span>
+            <button
+              onClick={() => { playBubble(); setThreshold(55); speakWord("쉬운 한글 쓰기!"); }}
+              style={{
+                padding: '2px 8px', borderRadius: '8px', border: 'none', fontSize: '0.85rem', cursor: 'pointer',
+                background: threshold === 55 ? 'var(--mint)' : 'transparent',
+                color: threshold === 55 ? 'white' : '#4a3e4d',
+                fontFamily: 'var(--font-kids)',
+                fontWeight: threshold === 55 ? 'bold' : 'normal'
+              }}
+            >
+              쉬움
+            </button>
+            <button
+              onClick={() => { playBubble(); setThreshold(75); speakWord("보통 한글 쓰기!"); }}
+              style={{
+                padding: '2px 8px', borderRadius: '8px', border: 'none', fontSize: '0.85rem', cursor: 'pointer',
+                background: threshold === 75 ? 'var(--yellow)' : 'transparent',
+                color: threshold === 75 ? '#8c6b00' : '#4a3e4d',
+                fontFamily: 'var(--font-kids)',
+                fontWeight: threshold === 75 ? 'bold' : 'normal'
+              }}
+            >
+              보통
+            </button>
+            <button
+              onClick={() => { playBubble(); setThreshold(90); speakWord("꼼꼼한 한글 쓰기!"); }}
+              style={{
+                padding: '2px 8px', borderRadius: '8px', border: 'none', fontSize: '0.85rem', cursor: 'pointer',
+                background: threshold === 90 ? 'var(--pink-soft)' : 'transparent',
+                color: threshold === 90 ? 'white' : '#4a3e4d',
+                fontFamily: 'var(--font-kids)',
+                fontWeight: threshold === 90 ? 'bold' : 'normal'
+              }}
+            >
+              꼼꼼히
+            </button>
+          </div>
+
           {screen !== 'hub' && (
             <button className="kids-btn kids-btn-lavender" onClick={() => {
               playBubble();
@@ -156,6 +207,7 @@ export default function App() {
         {screen === 'trace' && activeWord && (
           <DynamicTracing
             word={activeWord}
+            threshold={threshold}
             onNext={handleTraceComplete}
             onBack={() => {
               playBubble();
