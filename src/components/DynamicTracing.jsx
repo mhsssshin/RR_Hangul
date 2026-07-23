@@ -6,7 +6,7 @@ import confetti from 'canvas-confetti';
 // 아동의 친필 드로잉 궤적을 SVG 패스 스트링으로 변환해 주는 헬퍼 함수
 const getSvgPathData = (strokes, svgSize) => {
   if (!strokes || strokes.length === 0) return '';
-  const scale = svgSize / 350; // CANVAS_SIZE(350) 기준
+  const scale = svgSize / 320; // CANVAS_SIZE(320) 기준
   return strokes.map(stroke => {
     if (stroke.length === 0) return '';
     const start = `M ${stroke[0].x * scale} ${stroke[0].y * scale}`;
@@ -36,7 +36,7 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
   const offscreenTextCanvasRef = useRef(null);
   const offscreenDrawCanvasRef = useRef(null);
 
-  const CANVAS_SIZE = 350;
+  const CANVAS_SIZE = 320;
 
   // 글자 마스크 생성 및 그리기
   useEffect(() => {
@@ -443,12 +443,7 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
 
   const clearCanvas = () => {
     playBubble();
-    pathsRef.current = [];
-    setCoverage(0);
-    setCompleted(false);
-    setTimeout(() => {
-      initCanvas();
-    }, 50);
+    initCanvas();
   };
 
   // 다음 글자로 넘어가거나 스티커판으로 가기
@@ -462,12 +457,7 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
 
     if (currentIdx < syllables.length - 1) {
       setCurrentIdx(currentIdx + 1);
-      pathsRef.current = [];
-      setCoverage(0);
-      setCompleted(false);
-      setTimeout(() => {
-        initCanvas();
-      }, 50);
+      // initCanvas()는 useEffect([char])에 의해 자동으로 안전하게 즉시 실행됩니다.
     } else {
       onNext(updatedPaths); // 모든 음절을 다 썼으면 전체 친필 경로를 부모 컴포넌트로 전송!
     }
@@ -479,38 +469,314 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
       flexDirection: 'column',
       height: '100%',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '10px 0',
-      position: 'relative'
+      justifyContent: 'flex-start',
+      padding: '6px 0',
+      position: 'relative',
+      gap: '6px'
     }}>
       {/* 상단 바 */}
       <div style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center', padding: '0 20px' }}>
-        <button className="kids-btn kids-btn-lavender" onClick={onBack}>
-          ← 스캔하기로 돌아가기
+        <button className="kids-btn kids-btn-lavender" onClick={onBack} style={{ padding: '6px 14px', fontSize: '0.95rem' }}>
+          ← 돌아가기
         </button>
         <div style={{
           background: 'white',
-          padding: '8px 24px',
-          borderRadius: '20px',
-          fontSize: '1.2rem',
+          padding: '6px 18px',
+          borderRadius: '16px',
+          fontSize: '1.1rem',
           color: '#634fa6',
           border: '2px solid var(--lavender)',
           display: 'flex',
           gap: '8px',
           alignItems: 'center'
         }}>
-          <span>한글 따라 쓰기 단계 ✍️</span>
+          <span>한글 따라 쓰기 ✍️</span>
           <span style={{
             background: 'var(--pink-primary)',
             color: 'white',
-            borderRadius: '10px',
-            padding: '2px 8px',
-            fontSize: '1rem'
+            borderRadius: '8px',
+            padding: '1px 6px',
+            fontSize: '0.9rem'
           }}>
             {currentIdx + 1} / {syllables.length}
           </span>
         </div>
-        <div style={{ width: '100px' }}></div>
+        <div style={{ width: '80px' }}></div>
+      </div>
+
+      {/* 상단 통합 슬림 요술 가이드 라인 */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        fontSize: '0.95rem',
+        color: '#4a3e4d',
+        background: 'rgba(255, 255, 255, 0.5)',
+        padding: '6px 16px',
+        borderRadius: '12px',
+        border: '1px solid rgba(255, 255, 255, 0.7)',
+        maxWidth: '90%',
+        margin: '2px 0'
+      }}>
+        <span>🧚 <b>요술 요정:</b></span>
+        <span>
+          {completed
+            ? `참 잘했어요! "${char}" 글자가 반짝반짝 빛나요!`
+            : coverage > 40
+              ? '거의 다 채워졌어! 요술봉을 끝까지 움직여봐!'
+              : '연한 분홍색 글자를 문지르듯이 요술봉으로 따라 그려봐!'}
+        </span>
+      </div>
+
+      {/* 중앙: 가이드선 캔버스 */}
+      <div style={{
+        position: 'relative',
+        width: `${CANVAS_SIZE}px`,
+        height: `${CANVAS_SIZE}px`,
+        background: 'white',
+        borderRadius: '32px',
+        border: completed ? '6px solid var(--mint)' : '6px solid var(--pink-soft)',
+        boxShadow: completed ? '0 12px 30px rgba(162,232,221,0.3)' : 'var(--shadow-md)',
+        overflow: 'hidden',
+        touchAction: 'none'
+      }}>
+        {/* 가이드 글자 레이어 */}
+        <canvas
+          ref={bgCanvasRef}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none'
+          }}
+        />
+
+        {/* 유저 드로잉 레이어 */}
+        <canvas
+          ref={canvasRef}
+          onPointerDown={startDrawing}
+          onPointerMove={draw}
+          onPointerUp={stopDrawing}
+          onPointerLeave={stopDrawing}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            cursor: completed ? 'default' : 'crosshair',
+            touchAction: 'none'
+          }}
+        />
+
+        {/* 완성 축하 체크 오버레이 */}
+        {completed && (
+          <div style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            background: 'rgba(162, 232, 221, 0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            pointerEvents: 'none',
+            animation: 'bounceIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+          }}>
+            <div style={{
+              background: 'white',
+              borderRadius: '50%',
+              width: '80px',
+              height: '80px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+              border: '4px solid var(--mint)'
+            }}>
+              <Check size={48} color="var(--mint)" strokeWidth={4} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 단어 조립 진행 상태 (친필 글씨 누적 노출 - 슬림하게 조정) */}
+      <div style={{
+        display: 'flex',
+        gap: '8px',
+        justifyContent: 'center',
+        alignItems: 'center',
+        margin: '4px 0',
+        background: 'rgba(255, 255, 255, 0.3)',
+        padding: '6px 16px',
+        borderRadius: '20px',
+        border: '1.5px solid rgba(255, 255, 255, 0.5)'
+      }}>
+        {syllables.map((char, idx) => {
+          const isWritten = idx < currentIdx;
+          const isActive = idx === currentIdx;
+          const syllableStrokes = wordPaths[idx] || [];
+
+          return (
+            <div
+              key={idx}
+              style={{
+                position: 'relative',
+                width: '52px',
+                height: '52px',
+                background: isActive ? '#fffbfa' : 'white',
+                borderRadius: '12px',
+                border: isActive
+                  ? '3px solid var(--pink-primary)'
+                  : isWritten
+                    ? '2px solid var(--mint)'
+                    : '2px solid #ebdcf5',
+                boxShadow: isActive ? '0 0 8px rgba(255,117,151,0.15)' : 'var(--shadow-sm)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                transition: 'all 0.3s'
+              }}
+            >
+              {/* 연한 가이드 텍스트 배경 (쓴 글자도 뒤에 살짝 보여서 가이드 제공) */}
+              <span style={{
+                position: 'absolute',
+                fontSize: '1.8rem',
+                color: isActive 
+                  ? 'rgba(255, 117, 151, 0.15)' 
+                  : isWritten 
+                    ? 'rgba(162, 232, 221, 0.15)' 
+                    : 'rgba(74, 62, 77, 0.08)',
+                fontWeight: 'bold',
+                pointerEvents: 'none',
+                zIndex: 0
+              }}>
+                {char}
+              </span>
+
+              {/* 쓴 글자 (친필 드로잉 렌더링) */}
+              {isWritten && (
+                <svg width="100%" height="100%" viewBox="0 0 52 52" style={{ position: 'relative', zIndex: 1, pointerEvents: 'none' }}>
+                  <path
+                    d={getSvgPathData(syllableStrokes, 52)}
+                    fill="none"
+                    stroke="var(--pink-primary)"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+
+              {/* 현재 쓰고 있는 글자 하이라이트 아이콘 */}
+              {isActive && (
+                <div style={{
+                  position: 'absolute',
+                  top: '2px',
+                  right: '2px',
+                  fontSize: '0.8rem',
+                  background: 'var(--pink-primary)',
+                  color: 'white',
+                  borderRadius: '50%',
+                  width: '16px',
+                  height: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold'
+                }}>
+                  ✏️
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* 하단 제어 및 피드백 */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '12px',
+        width: '100%',
+        zIndex: 5
+      }}>
+        {/* 학습 게이지 미터기 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '320px' }}>
+          <span style={{ fontSize: '1.1rem', color: '#8c7694', whiteSpace: 'nowrap' }}>마법 충전:</span>
+          <div style={{
+            flex: 1,
+            height: '20px',
+            background: '#e8e3f0',
+            borderRadius: '10px',
+            overflow: 'hidden',
+            border: '2px solid white',
+            boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
+          }}>
+            <div style={{
+              width: `${coverage}%`,
+              height: '100%',
+              background: completed
+                ? 'linear-gradient(90deg, var(--mint) 0%, #76ddcb 100%)'
+                : 'linear-gradient(90deg, #ffaec4 0%, var(--pink-primary) 100%)',
+              borderRadius: '10px',
+              transition: 'width 0.1s ease-out'
+            }} />
+          </div>
+          <span style={{
+            fontSize: '1.2rem',
+            fontWeight: 'bold',
+            color: completed ? 'var(--mint)' : 'var(--pink-primary)',
+            width: '100px',
+            textAlign: 'right',
+            whiteSpace: 'nowrap'
+          }}>
+            {coverage}% / {threshold}%
+          </span>
+        </div>
+
+        {/* 액션 버튼 */}
+        <div style={{ display: 'flex', gap: '16px' }}>
+          {!completed ? (
+            <>
+              <button className="kids-btn kids-btn-lavender" onClick={clearCanvas} style={{ fontSize: '1.2rem', padding: '10px 20px' }}>
+                <Trash2 size={20} /> 지우기 🧼
+              </button>
+              <button
+                className="kids-btn kids-btn-pink"
+                style={{
+                  fontSize: '1.3rem',
+                  padding: '10px 24px',
+                  boxShadow: '0 6px 0 var(--pink-dark)'
+                }}
+                onClick={checkWriting}
+              >
+                다 썼어요! 🪄
+              </button>
+            </>
+          ) : (
+            <button
+              className="kids-btn kids-btn-mint"
+              style={{
+                fontSize: '1.4rem',
+                padding: '10px 32px',
+                animation: 'magicPulse 1.5s infinite',
+                boxShadow: '0 8px 0 #3ebfa9'
+              }}
+              onClick={handleProceed}
+            >
+              {currentIdx < syllables.length - 1 
+                ? '다음 글자 쓰러 가기! ✍️' 
+                : '칭찬 스티커 붙이기! 👑'}
+              <ArrowRight size={20} style={{ marginLeft: '6px' }} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 중앙: 가이드선 캔버스 */}
