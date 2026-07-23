@@ -277,7 +277,7 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
 
     // 유저의 캔버스 궤적을 100x100 오프스크린 캔버스로 스케일 다운해서 그리기
     dCtx.strokeStyle = 'white';
-    dCtx.lineWidth = 11; // 미세한 어긋남을 허용하기 위해 판정 브러쉬 두께를 상향 (기존 8)
+    dCtx.lineWidth = 7; // 브러쉬 번짐으로 인한 인접 셀 강제 충전을 막기 위해 판정 브러쉬 굵기를 축소 (기존 11)
     dCtx.lineCap = 'round';
     dCtx.lineJoin = 'round';
 
@@ -298,9 +298,9 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
     const textImgData = tCtx.getImageData(0, 0, 100, 100).data;
     const drawImgData = dCtx.getImageData(0, 0, 100, 100).data;
 
-    // 8x8 그리드 분석 (글씨 획이 있는 영역을 골고루 채웠는지 검사)
-    const GRID_SIZE = 8;
-    const CELL_PIXELS = 100 / GRID_SIZE; // 12.5 pixels
+    // 16x16 그리드 분석 (격자를 더욱 촘촘하게 나누어 획 누락을 방지)
+    const GRID_SIZE = 16;
+    const CELL_PIXELS = 100 / GRID_SIZE; // 6.25 pixels
     
     let activeCells = 0;
     let hitCells = 0;
@@ -329,11 +329,11 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
           }
         }
         
-        // 글자 픽셀이 일정 수(최소 3개) 이상 들어있는 셀만 활성 구역으로 인지
-        if (textPixelCount > 3) {
+        // 셀 크기가 작으므로 텍스트 픽셀이 최소 1개 초과인 경우 활성 구역으로 체크
+        if (textPixelCount > 1) {
           activeCells++;
-          // 사용자가 이 구역 내 글자의 30% 이상을 그렸다면 해당 구역 채움 완료로 판정
-          if (userHitPixelCount / textPixelCount >= 0.3) {
+          // 격자 내 글씨 픽셀의 25% 이상 채웠을 때 히트로 인정
+          if (userHitPixelCount / textPixelCount >= 0.25) {
             hitCells++;
           }
         }
