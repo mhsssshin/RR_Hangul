@@ -38,6 +38,7 @@ export default function DynamicTracing({ word, onNext, onBack }) {
     setCompleted(false);
     setCoverage(0);
     particlesRef.current = [];
+    pathsRef.current = [];
 
     const canvas = canvasRef.current;
     const bgCanvas = bgCanvasRef.current;
@@ -157,7 +158,7 @@ export default function DynamicTracing({ word, onNext, onBack }) {
   };
 
   // 드로잉 데이터 저장
-  const [paths, setPaths] = useState([]);
+  const pathsRef = useRef([]);
 
   const redrawCanvas = () => {
     const canvas = canvasRef.current;
@@ -175,7 +176,7 @@ export default function DynamicTracing({ word, onNext, onBack }) {
     ctx.shadowBlur = 10;
     ctx.shadowColor = 'rgba(255, 117, 151, 0.4)';
 
-    paths.forEach(path => {
+    pathsRef.current.forEach(path => {
       if (path.length < 1) return;
       ctx.beginPath();
       ctx.moveTo(path[0].x, path[0].y);
@@ -242,7 +243,7 @@ export default function DynamicTracing({ word, onNext, onBack }) {
     if (completed) return;
     setIsDrawing(true);
     const coord = getCoordinates(e);
-    setPaths(prev => [...prev, [coord]]);
+    pathsRef.current.push([coord]);
     createSparkles(coord.x, coord.y);
   };
 
@@ -252,13 +253,10 @@ export default function DynamicTracing({ word, onNext, onBack }) {
     const coord = getCoordinates(e);
     
     // 최근 선에 점 추가
-    setPaths(prev => {
-      const copy = [...prev];
-      if (copy.length > 0) {
-        copy[copy.length - 1].push(coord);
-      }
-      return copy;
-    });
+    const currentPath = pathsRef.current[pathsRef.current.length - 1];
+    if (currentPath) {
+      currentPath.push(coord);
+    }
 
     createSparkles(coord.x, coord.y);
     calculateCoverage();
@@ -283,7 +281,7 @@ export default function DynamicTracing({ word, onNext, onBack }) {
     dCtx.lineCap = 'round';
     dCtx.lineJoin = 'round';
 
-    paths.forEach(path => {
+    pathsRef.current.forEach(path => {
       if (path.length < 1) return;
       dCtx.beginPath();
       // 좌표 축소 (CANVAS_SIZE -> 100)
@@ -351,7 +349,7 @@ export default function DynamicTracing({ word, onNext, onBack }) {
 
   const clearCanvas = () => {
     playBubble();
-    setPaths([]);
+    pathsRef.current = [];
     setCoverage(0);
     setCompleted(false);
     setTimeout(() => {
@@ -364,7 +362,7 @@ export default function DynamicTracing({ word, onNext, onBack }) {
     playBubble();
     if (currentIdx < syllables.length - 1) {
       setCurrentIdx(currentIdx + 1);
-      setPaths([]);
+      pathsRef.current = [];
     } else {
       onNext(); // 모든 음절을 다 썼으면 스티커 보드로 이동
     }
