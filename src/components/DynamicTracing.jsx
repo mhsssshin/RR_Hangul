@@ -298,22 +298,50 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
     const textImgData = tCtx.getImageData(0, 0, 100, 100).data;
     const drawImgData = dCtx.getImageData(0, 0, 100, 100).data;
 
-    let targetPixels = 0;
-    let hitPixels = 0;
-
-    for (let i = 0; i < textImgData.length; i += 4) {
-      const alphaText = textImgData[i + 3]; // 글씨 불투명도
-      if (alphaText > 50) { // 검은색 글씨 픽셀이 있다면
-        targetPixels++;
-        const alphaDraw = drawImgData[i + 3]; // 사용자가 그린 픽셀
-        if (alphaDraw > 50) {
-          hitPixels++;
+    // 8x8 그리드 분석 (글씨 획이 있는 영역을 골고루 채웠는지 검사)
+    const GRID_SIZE = 8;
+    const CELL_PIXELS = 100 / GRID_SIZE; // 12.5 pixels
+    
+    let activeCells = 0;
+    let hitCells = 0;
+    
+    for (let gy = 0; gy < GRID_SIZE; gy++) {
+      for (let gx = 0; gx < GRID_SIZE; gx++) {
+        const startX = Math.floor(gx * CELL_PIXELS);
+        const startY = Math.floor(gy * CELL_PIXELS);
+        const endX = Math.min(Math.floor((gx + 1) * CELL_PIXELS), 100);
+        const endY = Math.min(Math.floor((gy + 1) * CELL_PIXELS), 100);
+        
+        let textPixelCount = 0;
+        let userHitPixelCount = 0;
+        
+        for (let y = startY; y < endY; y++) {
+          for (let x = startX; x < endX; x++) {
+            const idx = (y * 100 + x) * 4;
+            const alphaText = textImgData[idx + 3];
+            if (alphaText > 50) {
+              textPixelCount++;
+              const alphaDraw = drawImgData[idx + 3];
+              if (alphaDraw > 50) {
+                userHitPixelCount++;
+              }
+            }
+          }
+        }
+        
+        // 글자 픽셀이 일정 수(최소 3개) 이상 들어있는 셀만 활성 구역으로 인지
+        if (textPixelCount > 3) {
+          activeCells++;
+          // 사용자가 이 구역 내 글자의 30% 이상을 그렸다면 해당 구역 채움 완료로 판정
+          if (userHitPixelCount / textPixelCount >= 0.3) {
+            hitCells++;
+          }
         }
       }
     }
 
-    if (targetPixels > 0) {
-      const pct = Math.floor((hitPixels / targetPixels) * 100);
+    if (activeCells > 0) {
+      const pct = Math.floor((hitCells / activeCells) * 100);
       setCoverage(Math.min(pct, 100));
 
       // 설정된 민감도(난이도) threshold에 따라 성공 처리!
