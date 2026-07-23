@@ -12,7 +12,21 @@ const DEFAULT_WORDS = [
   { id: '7', text: '사랑', icon: '💖', desc: '사랑! 따뜻하고 행복한 하트 사랑이에요!' },
   { id: '8', text: '노래', icon: '🎵', desc: '노래! 신나게 랄랄라 부르는 노래예요!' },
   { id: '9', text: '바다', icon: '🌊', desc: '바다! 철썩철썩 푸르고 넓은 바다예요!' },
-  { id: '10', text: '로롱', icon: '🧚', desc: '로롱! 한글 나라의 꼬마 요정 친구예요!' }
+  { id: '10', text: '로롱', icon: '🧚', desc: '로롱! 한글 나라의 꼬마 요정 친구예요!' },
+  { id: '11', text: '아기', icon: '👶', desc: '아기! 방긋방긋 웃는 귀여운 아기예요!' },
+  { id: '12', text: '하늘', icon: '🌤️', desc: '하늘! 파랗고 뭉게구름이 떠 있는 예쁜 하늘이에요!' },
+  { id: '13', text: '자동차', icon: '🚗', desc: '자동차! 빵빵 달리는 멋진 자동차예요!' },
+  { id: '14', text: '꽃', icon: '🌸', desc: '꽃! 알록달록 예쁘고 향기로운 꽃이에요!' },
+  { id: '15', text: '사자', icon: '🦁', desc: '사자! 어흥 소리 내는 멋진 동물의 왕 사자예요!' },
+  { id: '16', text: '무지개', icon: '🌈', desc: '무지개! 하늘에 일곱 색깔 무지개가 떴어요!' },
+  { id: '17', text: '과자', icon: '🍪', desc: '과자! 바삭바삭 맛있는 달콤한 과자예요!' },
+  { id: '18', text: '원숭이', icon: '🐵', desc: '원숭이! 바나나를 좋아하는 장난꾸러기 원숭이예요!' },
+  { id: '19', text: '별', icon: '⭐', desc: '별! 밤하늘에 반짝반짝 빛나는 별이에요!' },
+  { id: '20', text: '햇님', icon: '☀️', desc: '햇님! 아침에 둥실 떠서 따뜻하게 비춰주는 햇님이에요!' },
+  { id: '21', text: '수박', icon: '🍉', desc: '수박! 시원하고 달콤한 여름 과일 초록 수박이에요!' },
+  { id: '22', text: '기차', icon: '🚂', desc: '기차! 칙칙폭폭 길게 달리는 기차예요!' },
+  { id: '23', text: '우산', icon: '🌂', desc: '우산! 비 오는 날 비를 막아주는 고마운 우산이에요!' },
+  { id: '24', text: '물고기', icon: '🐟', desc: '물고기! 물속에서 헤엄치는 예쁜 물고기예요!' }
 ];
 
 const EMOJI_OPTIONS = ['🍎', '🐰', '🦋', '🚀', '💖', '👑', '🦄', '🦖', '🚗', '🍦', '🧸', '👩', '👨', '🧚', '🐱', '🐶'];
@@ -27,13 +41,12 @@ export default function MainHub({ basket, setBasket, onStart, onViewGallery }) {
   const [newIcon, setNewIcon] = useState('👑');
   const [showCreator, setShowCreator] = useState(false);
 
-  // 단어 클릭 시 발음 들려주기 (청각 힌트)
+  // 단어 클릭 시 바구니에 담고 발음 들려주기
   const handleWordClick = (word) => {
-    playBubble();
-    speakWord(word.text);
+    addToBasket(word);
   };
 
-  // 단어 바구니에 담기 (드래그 앤 드롭 대용 터치 대응 버튼 및 드래그 시작)
+  // 단어 바구니에 담기
   const addToBasket = (word) => {
     if (basket.some(item => item.id === word.id)) {
       speakWord("이미 바구니에 있는 단어예요!");
@@ -41,6 +54,7 @@ export default function MainHub({ basket, setBasket, onStart, onViewGallery }) {
     }
     playBubble();
     setBasket([...basket, word]);
+    speakWord(word.text); // 담을 때 소리 내어 말하기
   };
 
   const removeFromBasket = (wordId) => {
@@ -136,39 +150,28 @@ export default function MainHub({ basket, setBasket, onStart, onViewGallery }) {
 
           <div className="app-content" style={{ padding: 0, overflowY: 'auto' }}>
             <div className="words-grid">
-              {library.map((word) => (
-                <div
-                  key={word.id}
-                  className="word-card"
-                  draggable
-                  onDragStart={(e) => handleDragStart(e, word)}
-                  onClick={() => handleWordClick(word)}
-                >
-                  <span className="word-icon">{word.icon}</span>
-                  <span className="word-text">{word.text}</span>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addToBasket(word);
-                    }}
+              {library.map((word) => {
+                const isInBasket = basket.some(item => item.id === word.id);
+                return (
+                  <div
+                    key={word.id}
+                    className="word-card"
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, word)}
+                    onClick={() => handleWordClick(word)}
                     style={{
-                      marginTop: '4px',
-                      background: 'var(--pink-light)',
-                      border: 'none',
-                      borderRadius: '50%',
-                      width: '28px',
-                      height: '28px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                      color: 'var(--pink-primary)'
+                      background: isInBasket ? 'var(--pink-light)' : 'white',
+                      borderColor: isInBasket ? 'var(--pink-soft)' : 'rgba(255,255,255,0.9)'
                     }}
                   >
-                    <Plus size={16} strokeWidth={3} />
-                  </button>
-                </div>
-              ))}
+                    <span className="word-icon">{word.icon}</span>
+                    <span className="word-text">{word.text}</span>
+                    {isInBasket && (
+                      <span className="word-badge">✓</span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
