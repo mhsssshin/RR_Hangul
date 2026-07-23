@@ -26,6 +26,7 @@ export default function App() {
   const [currentIdx, setCurrentIdx] = useState(0); // 현재 학습 중인 단어의 인덱스
   const [showAllClearModal, setShowAllClearModal] = useState(false);
   const [threshold, setThreshold] = useState(75); // 쓰기 민감도 난이도 (55: 쉬움, 75: 보통, 90: 꼼꼼히)
+  const [drawnWordPaths, setDrawnWordPaths] = useState([]); // 아동이 음절별로 직접 그린 글자 궤적들
 
   const activeWord = basket[currentIdx];
 
@@ -71,7 +72,8 @@ export default function App() {
   };
 
   // 글자 쓰기 완료 -> 스티커판 꾸미기로 이동
-  const handleTraceComplete = () => {
+  const handleTraceComplete = (paths) => {
+    setDrawnWordPaths(paths);
     setScreen('stickers');
   };
 
@@ -275,6 +277,7 @@ export default function App() {
         {screen === 'stickers' && activeWord && (
           <StickerBoard
             word={activeWord}
+            drawnWordPaths={drawnWordPaths}
             onNext={handleStickersComplete}
             onBackToHub={() => {
               playBubble();

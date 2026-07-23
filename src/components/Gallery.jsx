@@ -3,6 +3,18 @@ import { Trash2, ArrowLeft, Heart, Calendar } from 'lucide-react';
 import { playBubble, speakWord } from '../utils/audio';
 import { WordCardImage } from './MainHub';
 
+// 아동의 친필 드로잉 궤적을 SVG 패스 스트링으로 변환해 주는 헬퍼 함수
+const getSvgPathData = (strokes, svgSize) => {
+  if (!strokes || strokes.length === 0) return '';
+  const scale = svgSize / 350; // DynamicTracing의 CANVAS_SIZE(350) 기준
+  return strokes.map(stroke => {
+    if (stroke.length === 0) return '';
+    const start = `M ${stroke[0].x * scale} ${stroke[0].y * scale}`;
+    const lines = stroke.slice(1).map(pt => `L ${pt.x * scale} ${pt.y * scale}`).join(' ');
+    return `${start} ${lines}`;
+  }).join(' ');
+};
+
 const BACKGROUNDS = [
   { css: 'linear-gradient(135deg, #ffeef2 0%, #ffc5d3 100%)' },
   { css: 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)' },
@@ -129,23 +141,81 @@ export default function Gallery({ onBack }) {
                             left: `${x}px`,
                             top: `${y}px`,
                             transform: `translate(-50%, -50%) scale(${scale}) rotate(${sticker.rotation}deg)`,
-                            width: '160px',
+                            width: '185px',
                             background: 'white',
                             borderRadius: '24px',
                             border: '3px solid var(--pink-soft)',
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            justifyContent: 'center',
                             padding: '12px',
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.05)',
+                            gap: '8px',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
                             pointerEvents: 'none'
                           }}
                         >
-                          <WordCardImage word={sticker} size={50} />
-                          <span style={{ fontSize: '1.8rem', color: 'var(--pink-dark)', marginTop: '4px', fontWeight: 'bold' }}>
-                            {sticker.text}
-                          </span>
+                          {/* 상단 미니 이미지 & 텍스트 */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <WordCardImage word={sticker} size={24} />
+                            <span style={{ fontSize: '1rem', color: '#8c7694', fontWeight: 'bold' }}>
+                              {sticker.text}
+                            </span>
+                          </div>
+
+                          {/* 중앙: 친필 드로잉 복원 렌더러 */}
+                          <div style={{
+                            display: 'flex',
+                            gap: '4px',
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            background: '#faf6fd',
+                            borderRadius: '16px',
+                            padding: '6px',
+                            width: '100%',
+                            border: '1.5px solid #ebdcf5'
+                          }}>
+                            {Array.from(sticker.text).map((char, charIdx) => {
+                              const syllableStrokes = sticker.drawnPaths?.[charIdx] || [];
+                              return (
+                                <div key={charIdx} style={{
+                                  position: 'relative',
+                                  width: '45px',
+                                  height: '45px',
+                                  background: 'white',
+                                  borderRadius: '10px',
+                                  border: '1.5px solid var(--pink-soft)',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  overflow: 'hidden'
+                                }}>
+                                  {/* 연한 가이드 글자 */}
+                                  <span style={{
+                                    position: 'absolute',
+                                    fontSize: '1.5rem',
+                                    color: 'rgba(74, 62, 77, 0.08)',
+                                    fontWeight: 'bold',
+                                    pointerEvents: 'none',
+                                    zIndex: 0
+                                  }}>
+                                    {char}
+                                  </span>
+                                  
+                                  {/* 아이의 획 */}
+                                  <svg width="100%" height="100%" viewBox="0 0 45 45" style={{ position: 'relative', zIndex: 1, pointerEvents: 'none' }}>
+                                    <path
+                                      d={getSvgPathData(syllableStrokes, 45)}
+                                      fill="none"
+                                      stroke="var(--pink-primary)"
+                                      strokeWidth="3.5"
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    />
+                                  </svg>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       );
                     }

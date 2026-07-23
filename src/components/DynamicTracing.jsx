@@ -14,6 +14,7 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
   const [isDrawing, setIsDrawing] = useState(false);
   const [coverage, setCoverage] = useState(0); // 0 to 100
   const [completed, setCompleted] = useState(false);
+  const [wordPaths, setWordPaths] = useState([]); // 각 음절별 드로잉 경로들
 
   // 파티클 (요술봉 별무리 효과)
   const particlesRef = useRef([]);
@@ -305,6 +306,10 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
     let activeCells = 0;
     let hitCells = 0;
     
+    // 3x3 구역별 조기 성공 버그 해결용 상태 맵
+    const cellActive = Array(16).fill(0).map(() => Array(16).fill(false));
+    const cellHit = Array(16).fill(0).map(() => Array(16).fill(false));
+    
     for (let gy = 0; gy < GRID_SIZE; gy++) {
       for (let gx = 0; gx < GRID_SIZE; gx++) {
         const startX = Math.floor(gx * CELL_PIXELS);
@@ -329,19 +334,63 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
           }
         }
         
-        // 셀 크기가 작으므로 텍스트 픽셀이 최소 1개 초과인 경우 활성 구역으로 체크
         if (textPixelCount > 1) {
           activeCells++;
-          // 격자 내 글씨 픽셀의 25% 이상 채웠을 때 히트로 인정
+          cellActive[gy][gx] = true;
           if (userHitPixelCount / textPixelCount >= 0.25) {
             hitCells++;
+            cellHit[gy][gx] = true;
+          }
+        }
+      }
+    }
+
+    // 3x3 블록별 완전한 획 통과 체크 (구역이 존재하는데 사용자가 전혀 그리지 않은 부위가 있으면 성공 차단!)
+    const BLOCK_RANGES = [
+      { start: 0, end: 5 },
+      { start: 6, end: 10 },
+      { start: 11, end: 15 }
+    ];
+
+    let allBlocksMet = true;
+
+    for (let by = 0; by < 3; by++) {
+      for (let bx = 0; bx < 3; bx++) {
+        const ry = BLOCK_RANGES[by];
+        const rx = BLOCK_RANGES[bx];
+        
+        let blockActiveCells = 0;
+        let blockHitCells = 0;
+        
+        for (let gy = ry.start; gy <= ry.end; gy++) {
+          for (let gx = rx.start; gx <= rx.end; gx++) {
+            if (cellActive[gy][gx]) {
+              blockActiveCells++;
+              if (cellHit[gy][gx]) {
+                blockHitCells++;
+              }
+            }
+          }
+        }
+        
+        // 블록 내에 글씨가 유의미하게 존재하는 경우 (필수 구역)
+        if (blockActiveCells >= 3) {
+          // 해당 구역의 20% 이상을 칠해야 그 구역을 통과한 것으로 처리
+          if (blockHitCells / blockActiveCells < 0.2) {
+            allBlocksMet = false;
           }
         }
       }
     }
 
     if (activeCells > 0) {
-      const pct = Math.floor((hitCells / activeCells) * 100);
+      let pct = Math.floor((hitCells / activeCells) * 100);
+      
+      // 획을 빼먹은 구역이 있는 경우 진행률을 70%로 강제 제한하여 조기 통과 방지!
+      if (!allBlocksMet) {
+        pct = Math.min(pct, 70);
+      }
+      
       setCoverage(Math.min(pct, 100));
 
       // 설정된 민감도(난이도) threshold에 따라 성공 처리!
@@ -388,11 +437,22 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
   // 다음 글자로 넘어가거나 스티커판으로 가기
   const handleProceed = () => {
     playBubble();
+    
+    const currentPaths = [...pathsRef.current];
+    const updatedPaths = [...wordPaths];
+    updatedPaths[currentIdx] = currentPaths;
+    setWordPaths(updatedPaths);
+
     if (currentIdx < syllables.length - 1) {
       setCurrentIdx(currentIdx + 1);
       pathsRef.current = [];
+      setCoverage(0);
+      setCompleted(false);
+      setTimeout(() => {
+        initCanvas();
+      }, 50);
     } else {
-      onNext(); // 모든 음절을 다 썼으면 스티커 보드로 이동
+      onNext(updatedPaths); // 모든 음절을 다 썼으면 전체 친필 경로를 부모 컴포넌트로 전송!
     }
   };
 
