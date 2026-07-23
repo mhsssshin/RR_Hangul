@@ -316,8 +316,8 @@ export default function DynamicTracing({ word, onNext, onBack }) {
       const pct = Math.floor((hitPixels / targetPixels) * 100);
       setCoverage(Math.min(pct, 100));
 
-      // 5세 아동 기준으로 65% 이상 채우면 성공으로 처리!
-      if (pct >= 65 && !completed) {
+      // 90% 이상 채우면 성공으로 처리!
+      if (pct >= 90 && !completed) {
         triggerSuccess();
       }
     }
