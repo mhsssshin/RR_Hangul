@@ -3,6 +3,18 @@ import { Sparkles, Trash2, ArrowRight, Check } from 'lucide-react';
 import { playBubble, playSuccess, speakWord } from '../utils/audio';
 import confetti from 'canvas-confetti';
 
+// 아동의 친필 드로잉 궤적을 SVG 패스 스트링으로 변환해 주는 헬퍼 함수
+const getSvgPathData = (strokes, svgSize) => {
+  if (!strokes || strokes.length === 0) return '';
+  const scale = svgSize / 350; // CANVAS_SIZE(350) 기준
+  return strokes.map(stroke => {
+    if (stroke.length === 0) return '';
+    const start = `M ${stroke[0].x * scale} ${stroke[0].y * scale}`;
+    const lines = stroke.slice(1).map(pt => `L ${pt.x * scale} ${pt.y * scale}`).join(' ');
+    return `${start} ${lines}`;
+  }).join(' ');
+};
+
 export default function DynamicTracing({ word, threshold = 75, onNext, onBack }) {
   // 단어를 글자(음절) 단위로 쪼개기. 예: '사과' -> ['사', '과']
   const syllables = Array.from(word.text);
@@ -574,6 +586,100 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
             </div>
           </div>
         )}
+      </div>
+
+      {/* 단어 조립 진행 상태 (친필 글씨 누적 노출) */}
+      <div style={{
+        display: 'flex',
+        gap: '12px',
+        justifyContent: 'center',
+        alignItems: 'center',
+        margin: '10px 0',
+        background: 'rgba(255, 255, 255, 0.4)',
+        padding: '10px 24px',
+        borderRadius: '24px',
+        border: '1.5px solid rgba(255, 255, 255, 0.6)'
+      }}>
+        {syllables.map((char, idx) => {
+          const isWritten = idx < currentIdx;
+          const isActive = idx === currentIdx;
+          const syllableStrokes = wordPaths[idx] || [];
+
+          return (
+            <div
+              key={idx}
+              style={{
+                position: 'relative',
+                width: '65px',
+                height: '65px',
+                background: isActive ? '#fffbfa' : 'white',
+                borderRadius: '16px',
+                border: isActive
+                  ? '3px solid var(--pink-primary)'
+                  : isWritten
+                    ? '2px solid var(--mint)'
+                    : '2px solid #ebdcf5',
+                boxShadow: isActive ? '0 0 12px rgba(255,117,151,0.2)' : 'var(--shadow-sm)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden',
+                transition: 'all 0.3s'
+              }}
+            >
+              {/* 연한 가이드 텍스트 배경 (쓴 글자도 뒤에 살짝 보여서 가이드 제공) */}
+              <span style={{
+                position: 'absolute',
+                fontSize: '2.2rem',
+                color: isActive 
+                  ? 'rgba(255, 117, 151, 0.15)' 
+                  : isWritten 
+                    ? 'rgba(162, 232, 221, 0.15)' 
+                    : 'rgba(74, 62, 77, 0.08)',
+                fontWeight: 'bold',
+                pointerEvents: 'none',
+                zIndex: 0
+              }}>
+                {char}
+              </span>
+
+              {/* 쓴 글자 (친필 드로잉 렌더링) */}
+              {isWritten && (
+                <svg width="100%" height="100%" viewBox="0 0 65 65" style={{ position: 'relative', zIndex: 1, pointerEvents: 'none' }}>
+                  <path
+                    d={getSvgPathData(syllableStrokes, 65)}
+                    fill="none"
+                    stroke="var(--pink-primary)"
+                    strokeWidth="4.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
+
+              {/* 현재 쓰고 있는 글자 하이라이트 아이콘 */}
+              {isActive && (
+                <div style={{
+                  position: 'absolute',
+                  top: '2px',
+                  right: '2px',
+                  fontSize: '0.8rem',
+                  background: 'var(--pink-primary)',
+                  color: 'white',
+                  borderRadius: '50%',
+                  width: '16px',
+                  height: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold'
+                }}>
+                  ✏️
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* 하단 제어 및 피드백 */}
