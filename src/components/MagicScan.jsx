@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Volume2, Sparkles, ArrowRight, RotateCcw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playChime, playBubble, speakWord } from '../utils/audio';
+import { WordCardImage } from './MainHub';
 
 export default function MagicScan({ word, onNext, onBack }) {
   const [isPressing, setIsPressing] = useState(false);
@@ -200,14 +201,16 @@ export default function MagicScan({ word, onNext, onBack }) {
           <Sparkles className={isPressing ? 'float-effect' : ''} />
         </div>
 
-        {/* 큰 일러스트 아이콘 */}
+        {/* 큰 일러스트 이미지 / 아이콘 */}
         <div style={{
-          fontSize: '7rem',
           transform: isPressing ? 'scale(1.1) rotate(10deg)' : 'scale(1)',
           transition: 'transform 0.2s',
-          filter: scanCompleted ? 'drop-shadow(0 8px 12px rgba(255,117,151,0.25))' : 'none'
+          filter: scanCompleted ? 'drop-shadow(0 8px 12px rgba(255,117,151,0.25))' : 'none',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
         }}>
-          {word.icon}
+          <WordCardImage word={word} size={130} />
         </div>
 
         {/* 대형 글자 */}

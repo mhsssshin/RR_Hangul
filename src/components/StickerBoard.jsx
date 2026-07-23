@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Sparkles, Save, ArrowRight, RefreshCw, X, Trash } from 'lucide-react';
 import { playBubble, playSuccess, speakWord } from '../utils/audio';
 import confetti from 'canvas-confetti';
+import { WordCardImage } from './MainHub';
 
 const STICKERS = [
   { char: '👑', label: '왕관' },
@@ -30,6 +31,7 @@ export default function StickerBoard({ word, onNext, onBackToHub }) {
       id: 'main',
       char: word.icon,
       text: word.text, // 한글 텍스트 포함
+      image: word.image, // 고품질 실사/일러스트 이미지 URL 보존
       x: 180,
       y: 160,
       scale: 1.6,
@@ -323,7 +325,7 @@ export default function StickerBoard({ word, onNext, onBackToHub }) {
                   padding: '12px'
                 }}
               >
-                <span style={{ fontSize: '3rem' }}>{sticker.char}</span>
+                <WordCardImage word={sticker} size={50} />
                 <span style={{ fontSize: '1.8rem', color: 'var(--pink-dark)', marginTop: '4px', fontWeight: 'bold' }}>
                   {sticker.text}
                 </span>

@@ -2,6 +2,54 @@ import React, { useState } from 'react';
 import { Plus, Trash2, BookOpen, Sparkles, Heart } from 'lucide-react';
 import { playBubble, speakWord } from '../utils/audio';
 
+// 단어에 매칭된 웹 이미지 렌더러 (실패 시 이모지 폴백)
+export function WordCardImage({ word, size = 60 }) {
+  const [hasError, setHasError] = useState(!word?.image);
+
+  if (hasError) {
+    return (
+      <span 
+        className="word-icon" 
+        style={{ 
+          fontSize: `${size * 0.6}px`, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          height: `${size}px` 
+        }}
+      >
+        {word?.icon || '🧚'}
+      </span>
+    );
+  }
+
+  return (
+    <div style={{
+      width: `${size}px`,
+      height: `${size}px`,
+      borderRadius: '50%',
+      overflow: 'hidden',
+      border: '3px solid var(--pink-soft)',
+      boxShadow: '0 3px 8px rgba(0,0,0,0.05)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#fff3f5'
+    }}>
+      <img
+        src={word.image}
+        alt={word.text}
+        onError={() => setHasError(true)}
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover'
+        }}
+      />
+    </div>
+  );
+}
+
 const DEFAULT_WORDS = [
   { id: '1', text: '엄마', icon: '👩', desc: '엄마! 나를 가장 사랑하는 우리 엄마예요!' },
   { id: '2', text: '아빠', icon: '👨', desc: '아빠! 든든하고 다정한 우리 아빠예요!' },
@@ -164,8 +212,8 @@ export default function MainHub({ basket, setBasket, onStart, onViewGallery }) {
                       borderColor: isInBasket ? 'var(--pink-soft)' : 'rgba(255,255,255,0.9)'
                     }}
                   >
-                    <span className="word-icon">{word.icon}</span>
-                    <span className="word-text">{word.text}</span>
+                    <WordCardImage word={word} size={60} />
+                    <span className="word-text" style={{ marginTop: '4px' }}>{word.text}</span>
                     {isInBasket && (
                       <span className="word-badge">✓</span>
                     )}
@@ -239,8 +287,8 @@ export default function MainHub({ basket, setBasket, onStart, onViewGallery }) {
                     boxShadow: '0 6px 12px rgba(220,180,60,0.15)'
                   }}
                 >
-                  <span className="word-icon" style={{ fontSize: '2.5rem' }}>{word.icon}</span>
-                  <span className="word-text" style={{ fontSize: '1.2rem' }}>{word.text}</span>
+                  <WordCardImage word={word} size={50} />
+                  <span className="word-text" style={{ fontSize: '1.2rem', marginTop: '2px' }}>{word.text}</span>
                   <button
                     onClick={() => removeFromBasket(word.id)}
                     style={{

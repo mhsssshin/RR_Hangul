@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Trash2, ArrowLeft, Heart, Calendar } from 'lucide-react';
 import { playBubble, speakWord } from '../utils/audio';
+import { WordCardImage } from './MainHub';
 
 const BACKGROUNDS = [
   { css: 'linear-gradient(135deg, #ffeef2 0%, #ffc5d3 100%)' },
@@ -38,7 +39,7 @@ export default function Gallery({ onBack }) {
       padding: '10px 0'
     }}>
       {/* 상단 헤더 */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', padding: '0 10px' }}>
+      <div style={{ display: 'flex', justifycontent: 'space-between', alignItems: 'center', marginBottom: '24px', padding: '0 10px' }}>
         <button className="kids-btn kids-btn-lavender" onClick={onBack}>
           <ArrowLeft size={18} /> 메인으로 가기
         </button>
@@ -118,7 +119,7 @@ export default function Gallery({ onBack }) {
                     const x = sticker.x * scaleFactor;
                     const y = sticker.y * scaleFactor;
                     const scale = sticker.scale * scaleFactor;
-
+ 
                     if (sticker.isMain) {
                       return (
                         <div
@@ -141,7 +142,7 @@ export default function Gallery({ onBack }) {
                             pointerEvents: 'none'
                           }}
                         >
-                          <span style={{ fontSize: '3rem' }}>{sticker.char}</span>
+                          <WordCardImage word={sticker} size={50} />
                           <span style={{ fontSize: '1.8rem', color: 'var(--pink-dark)', marginTop: '4px', fontWeight: 'bold' }}>
                             {sticker.text}
                           </span>
