@@ -83,7 +83,7 @@ export default function CategorySelect({ profile, onSelectMode, onResetProfile }
   const categories = [
     {
       key: 'family',
-      title: '우리 가족 쓰기 👨‍👩‍👧',
+      title: '우리 가족 쓰기',
       desc: `${profile?.childName || '나'}, 엄마, 아빠 이름을 써보아요`,
       color: 'linear-gradient(135deg, #ffeef2 0%, #ffc5d3 100%)',
       border: '#ff9bb5',
@@ -91,7 +91,7 @@ export default function CategorySelect({ profile, onSelectMode, onResetProfile }
     },
     {
       key: 'animals',
-      title: '동물 친구들 🦁',
+      title: '동물 친구들',
       desc: '사자, 코끼리, 토끼 등 신비한 동물들의 이름',
       color: 'linear-gradient(135deg, #fffcf3 0%, #fff7d6 100%)',
       border: '#ffea8f',
@@ -99,7 +99,7 @@ export default function CategorySelect({ profile, onSelectMode, onResetProfile }
     },
     {
       key: 'objects',
-      title: '방 안의 사물 🧸',
+      title: '방 안의 사물',
       desc: '우산, 가방, 안경 등 자주 쓰는 물건들의 이름',
       color: 'linear-gradient(135deg, #effaf8 0%, #cbf2ec 100%)',
       border: '#a2e8dd',
@@ -107,7 +107,7 @@ export default function CategorySelect({ profile, onSelectMode, onResetProfile }
     },
     {
       key: 'teenieping',
-      title: '캐치 티니핑 ✨',
+      title: '캐치 티니핑',
       desc: '하츄핑, 조아핑, 포실핑 등 마법 요정 이름',
       color: 'linear-gradient(135deg, #fbf2ff 0%, #eedaff 100%)',
       border: '#e3daff',
@@ -115,7 +115,7 @@ export default function CategorySelect({ profile, onSelectMode, onResetProfile }
     },
     {
       key: 'dinosaurs',
-      title: '공룡 나라 🦖',
+      title: '공룡 나라',
       desc: '티라노, 트리케라 등 거대한 공룡들의 이름',
       color: 'linear-gradient(135deg, #ebf8ff 0%, #cdeeff 100%)',
       border: '#a3daff',
@@ -123,7 +123,7 @@ export default function CategorySelect({ profile, onSelectMode, onResetProfile }
     },
     {
       key: 'random',
-      title: '랜덤 카드 쓰기 🎲',
+      title: '랜덤 카드 쓰기',
       desc: '어떤 글자가 나타날까? 알쏭달쏭 뽑기 놀이',
       color: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
       border: '#86efac',
@@ -131,7 +131,7 @@ export default function CategorySelect({ profile, onSelectMode, onResetProfile }
     },
     {
       key: 'custom',
-      title: '내가 고르기 🧺',
+      title: '내가 고르기',
       desc: '단어 도서관에서 원하는 글자만 바구니에 쏙!',
       color: 'linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)',
       border: '#ffedd5',
