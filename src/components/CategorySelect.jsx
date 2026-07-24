@@ -179,41 +179,17 @@ export default function CategorySelect({ profile, onSelectMode, onResetProfile }
       </div>
 
       {/* 카테고리 카드 윈도우 */}
-      <div className="app-content" style={{ flex: 1, padding: 0 }}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-          gap: '20px',
-          padding: '8px'
-        }}>
+      <div className="category-scroll-container">
+        <div className="category-list-wrapper">
           {categories.map((cat) => (
             <div
               key={cat.key}
               onClick={() => handleSelect(cat.key)}
               style={{
                 background: cat.color,
-                border: `3px solid ${cat.border}`,
-                borderRadius: '32px',
-                padding: '24px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
-                cursor: 'pointer',
-                gap: '12px',
-                boxShadow: 'var(--shadow-sm)',
-                transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.25)'
+                border: `3px solid ${cat.border}`
               }}
-              className="gallery-frame float-effect"
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-8px) scale(1.03)';
-                e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'none';
-                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
-              }}
+              className="category-card-item float-effect"
             >
               <span style={{ fontSize: '4.5rem', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.06))' }}>
                 {cat.icon}

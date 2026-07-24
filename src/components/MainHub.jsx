@@ -172,7 +172,7 @@ export default function MainHub({ basket, setBasket, onStart, onViewGallery }) {
         </button>
       </div>
 
-      <div style={{ display: 'flex', gap: '24px', flex: 1, minHeight: 0 }}>
+      <div className="hub-layout">
         {/* 왼쪽: 단어 도서관 */}
         <div style={{
           flex: 1.3,
