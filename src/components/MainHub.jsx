@@ -151,7 +151,7 @@ export default function MainHub({ basket, setBasket, onStart, onViewGallery }) {
     setNewText('');
     setShowCreator(false);
     
-    speakWord(`${newWord.text} 단어가 생겼어요!`);
+    speakWord("새로운 단어가 생겼어요!");
   };
 
   return (

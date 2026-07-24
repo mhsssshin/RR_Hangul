@@ -31,7 +31,7 @@ export default function ProfileSetup({ onComplete }) {
     playBubble();
     
     // 로롱 요정의 기분 좋은 환영 인사
-    speakWord(`와! 만나서 반가워 ${profile.childName} 친구야! 우리 함께 재미있는 한글 놀이하러 출바알~!`);
+    speakWord("와! 만나서 반가워 친구야! 우리 함께 재미있는 한글 놀이하러 출바알~!");
     
     // 애니메이션 딜레이 후 부모 컴포넌트에 통보
     setTimeout(() => {

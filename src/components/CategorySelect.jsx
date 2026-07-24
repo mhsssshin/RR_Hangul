@@ -7,8 +7,8 @@ export default function CategorySelect({ profile, onSelectMode, onResetProfile }
   const childName = profile?.childName || '꼬마';
 
   useEffect(() => {
-    speakWord(`${childName}야, 오늘 어떤 카드 방에 들어가 볼까? 마법의 한글 카드가 기다리고 있어!`);
-  }, [childName]);
+    speakWord("오늘 어떤 카드 방에 들어가 볼까? 마법의 한글 카드가 기다리고 있어!");
+  }, []);
 
   const handleSelect = (modeKey) => {
     playChime();

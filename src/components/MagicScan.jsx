@@ -80,7 +80,7 @@ export default function MagicScan({ word, onNext, onBack }) {
     speakWord(word.text, () => {
       // 단어 명칭 완료 후 설명 읽기
       setTimeout(() => {
-        speakWord(word.desc || `${word.text}! 참 재밌는 단어예요!`);
+        speakWord(word.desc || "참 재밌는 단어예요!");
       }, 500);
     });
   };

@@ -41,7 +41,7 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
   // 글자 마스크 생성 및 그리기
   useEffect(() => {
     initCanvas();
-    speakWord(`글자 "${char}"를 따라 써보자! 반짝반짝 요술봉을 움직여봐!`);
+    speakWord("화면에 글자를 따라 써보자!");
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
@@ -438,7 +438,7 @@ export default function DynamicTracing({ word, threshold = 75, onNext, onBack })
       colors: ['#a2e8dd', '#a3daff']
     });
 
-    speakWord(`${char} 쓰기 성공! 아주 멋져!`);
+    speakWord("쓰기 성공! 아주 멋져!");
   };
 
   const clearCanvas = () => {

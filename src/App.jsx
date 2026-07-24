@@ -119,7 +119,7 @@ export default function App() {
     }());
 
     setShowAllClearModal(true);
-    speakWord(`축하합니다! ${profile?.childName || '친구야'}! 오늘 선택한 한글 단어 카드를 모두 완성했어요! 대단해!`);
+    speakWord("축하합니다! 오늘 선택한 한글 단어 카드를 모두 완성했어요! 대단해!");
   };
 
   const handleCloseAllClear = () => {
