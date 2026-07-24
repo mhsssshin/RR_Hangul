@@ -238,12 +238,12 @@ export function speakWord(text, onEnd = null) {
       }
 
       audio.play().catch(err => {
-        console.warn("ElevenLabs pre-rendered audio play failed, falling back to browser TTS:", err);
-        playBrowserTTS(trimmedText, onEnd);
+        console.warn("ElevenLabs pre-rendered audio play failed:", err);
+        if (onEnd) onEnd();
       });
     } else {
-      // 5) 사용자 커스텀 글자/이름은 브라우저 TTS로 예비 출력
-      playBrowserTTS(trimmedText, onEnd);
+      // 5) 사용자 커스텀 글자/이름은 음성을 출력하지 않음 (브라우저 TTS 완전 배제)
+      if (onEnd) onEnd();
     }
   } catch (e) {
     console.error("speakWord error:", e);
@@ -251,25 +251,7 @@ export function speakWord(text, onEnd = null) {
   }
 }
 
-// 브라우저 기본 TTS 헬퍼 함수 (안전장치 백업용)
+// 브라우저 기본 TTS 완전 비활성화
 function playBrowserTTS(text, onEnd) {
-  if ('speechSynthesis' in window) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ko-KR';
-    utterance.pitch = 1.45;
-    utterance.rate = 0.85;
-
-    const voices = window.speechSynthesis.getVoices();
-    const koVoice = voices.find(v => v.lang.includes('ko-KR'));
-    if (koVoice) {
-      utterance.voice = koVoice;
-    }
-
-    if (onEnd) {
-      utterance.onend = onEnd;
-    }
-    window.speechSynthesis.speak(utterance);
-  } else {
-    if (onEnd) onEnd();
-  }
+  if (onEnd) onEnd();
 }
